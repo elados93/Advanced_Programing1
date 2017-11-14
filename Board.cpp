@@ -1,0 +1,102 @@
+// Created by Elad Aharon on 28/10/17.
+// ID: 311200786
+
+#include <iostream>
+#include "Board.h"
+
+Board::Board(int row = 8, int col = 8) {
+    this->row = row;
+    this->col = col;
+
+    // Allocate pointers for the board.
+    this->matrix = new Cell*[row];
+    for(int i = 0;i<row;i++) {
+        this->matrix[i] = new Cell[col];
+    }
+
+    initBoard(); // Initialize the board
+}
+
+Board::Board(const Board &board) {
+    this->row = board.getRow();
+    this->col = board.getCol();
+
+    this->matrix = new Cell*[row];
+    for(int i = 0;i < row; i++) {
+        this->matrix[i] = new Cell[col];
+    }
+
+    // Copy each cell from the parameter.
+    for(int i = 0;i < row;i++) {
+        for(int j = 0;j < col;j++) {
+            Point p(i,j);
+            this->matrix[i][j] = Cell(board.getCell(p));
+        }
+    }
+
+}
+
+void Board::initBoard() {
+    // Initialize all the board with no owners.
+    for(int i = 0;i < row;i++) {
+        for(int j = 0;j < col;j++) {
+            this->matrix[i][j].setSymbol(NONE);
+        }
+    }
+
+    // Set the center of the board with the 2 players.
+    this->matrix[(row/2)-1][(col/2)-1].setSymbol(PLAYER_2);
+    this->matrix[(row/2)-1][(col/2)].setSymbol(PLAYER_1);
+    this->matrix[(row/2)][(col/2)].setSymbol(PLAYER_2);
+    this->matrix[(row/2)][(col/2)-1].setSymbol(PLAYER_1);
+
+}
+
+bool Board::isCellEmpty(Point &p) const {
+    return !this->matrix[p.getX()][p.getY()].isCellActive();
+}
+
+bool Board::isBoardFull() const {
+    for(int i = 0;i < row;i++) {
+        for(int j = 0;j < col;j++) {
+            if (!this->matrix[i][j].isCellActive()) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool Board::isInBoard(Point &p) const {
+
+    return ((this->row > p.getX() && p.getX() >= 0) && (this->col > p.getY() && p.getY() >= 0));
+}
+
+void Board::markCell(Point &p, owner symbol) {
+    this->matrix[p.getX()][p.getY()].setSymbol(symbol);
+}
+
+int Board::getRow() const {
+    return row;
+}
+
+int Board::getCol() const {
+    return col;
+}
+
+Cell Board::getCell(Point &p) const {
+    return this->matrix[p.getX()][p.getY()];
+}
+
+Board::~Board() {
+
+    for(int i = 0;i < row; i++) {
+        delete(this->matrix[i]);
+    }
+
+    delete this->matrix;
+}
+
+
+
+
