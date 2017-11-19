@@ -78,25 +78,24 @@ void GameManager :: run() {
     }
 
     printer.printBoard();
-    delete(lastMove);
+    printer.printLastMove(*currentPlayer, lastMove);
 
     if (checkStatus() == WIN) {
         owner winner = getWinner();
-        if (winner == PLAYER_1) {
+        if (winner == PLAYER_1)
             printer.printEndOfGame(player1, status1);
-        }
 
-        if (winner == PLAYER_2) {
+        if (winner == PLAYER_2)
             printer.printEndOfGame(player2, status1);
-        }
 
         char dummy;
         cin >> dummy;
     }
 
-    if (status1 == DRAW) {
+    if (status1 == DRAW)
         printer.printEndOfGame(player1, DRAW);
-    }
+
+    delete(lastMove);
 }
 
 void GameManager::playOneTurn() {
