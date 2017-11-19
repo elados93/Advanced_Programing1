@@ -6,12 +6,17 @@
 
 
 #include "Cell.h"
+#include "GenralDef.h"
+#include "Point.h"
+
 
 class Board {
 public:
     Board(int row , int col); // Constructor
     Board(const Board &board); // Copy Constructor
     ~Board(); // Destructor
+
+    Board &operator =(const Board &board);
 
     /**
      * Initialize the board with empty cells and puts 2 cells of player 1
@@ -25,7 +30,9 @@ public:
     int getRow() const;
     int getCol() const;
     Cell getCell(Point &p) const;
+    Point countOwner();
 
+    friend class GameState;
 private:
     int row;
     int col;

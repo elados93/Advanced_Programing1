@@ -8,6 +8,7 @@
 
 
 #include "Printer.h"
+#include "Player.h"
 
 class ConsolePrinter : public Printer {
 public:

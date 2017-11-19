@@ -9,8 +9,8 @@
 using namespace std;
 
 
-GameManager::GameManager(Board &board, Player &player1, Player &player2, Printer &printer,
-                         GameRules &gameRules) : board(board), player1(player1),
+GameManager::GameManager(GameState &gameState1, Player &player1, Player &player2, Printer &printer,
+                         GameRules &gameRules) : gameState(gameState1), player1(player1),
                                                                             player2(player2), printer(printer),
                                                                             gameRules(gameRules),
                                                                             currentPlayer() {
@@ -21,13 +21,13 @@ GameManager::GameManager(Board &board, Player &player1, Player &player2, Printer
 
 owner GameManager::getWinner() const {
     int p1Counter = 0, p2Counter = 0;
-    int row = board.getRow();
-    int col = board.getCol();
+    int row = gameState.board->getRow();
+    int col = gameState.board->getCol();
 
     for(int i = 0;i < row;i++) {
         for(int j = 0;j < col;j++) {
             Point p(i, j);
-            if (board.getCell(p).getSymbol() == PLAYER_1) {
+            if (gameState.board->getCell(p).getSymbol() == PLAYER_1) {
                 p1Counter++;
             } else {
                 p2Counter++;
@@ -46,13 +46,13 @@ owner GameManager::getWinner() const {
 }
 
 status GameManager::checkStatus() {
-    gameRules.makePossibleMoves(PLAYER_1);
-    gameRules.makePossibleMoves(PLAYER_2);
+    gameRules.makePossibleMoves(gameState, PLAYER_1);
+    gameRules.makePossibleMoves(gameState, PLAYER_2);
 
-    bool isFirstEmpty = gameRules.getPossibleMoves(PLAYER_1).empty();
-    bool isSecondEmpty = gameRules.getPossibleMoves(PLAYER_2).empty();
+    bool isFirstEmpty = gameState.vec1.empty();
+    bool isSecondEmpty = gameState.vec2.empty();
 
-    if (board.isBoardFull() || (isFirstEmpty && isSecondEmpty) ) {
+    if (gameState.board->isBoardFull() || (isFirstEmpty && isSecondEmpty) ) {
         owner result = getWinner();
         if (result == NONE) {
             return DRAW;
@@ -100,18 +100,19 @@ void GameManager :: run() {
 }
 
 void GameManager::playOneTurn() {
-    printer.printBoard();
+    if (currentPlayer == &player1)
+        printer.printBoard();
     possible_outcome result;
 
     vector <Point*> playerPossibleMoves;
     if (currentPlayer == &player1) {
-        playerPossibleMoves = gameRules.getPossibleMoves(PLAYER_1);
+        playerPossibleMoves = gameRules.getPossibleMoves(gameState, PLAYER_1);
     } else {
-        playerPossibleMoves = gameRules.getPossibleMoves(PLAYER_2);
+        playerPossibleMoves = gameRules.getPossibleMoves(gameState, PLAYER_2);
     }
 
     // If there isn't moves just get a dummy character.
-    if (playerPossibleMoves.empty()) {
+    if (playerPossibleMoves.empty() && currentPlayer == &player1) {
         printer.printNextPlayerMove(*currentPlayer, playerPossibleMoves);
         char dummy; // Input any key from the user
         cin >> dummy;
@@ -133,11 +134,11 @@ void GameManager::playOneTurn() {
             delete(lastMove);
         }
         // Get a point from the player.
-        lastMove = new Point(player1.getMove());
-        result = gameRules.makeMove(*lastMove, PLAYER_1);
+        lastMove = new Point(player1.getMove(gameState));
+        result = gameRules.makeMove(gameState, *lastMove, PLAYER_1);
         firstRun = false;
 
-    } else {
+    } else { // It's not the first turn in the game.
 
         if (currentPlayer == &player1) {
 
@@ -148,19 +149,24 @@ void GameManager::playOneTurn() {
             }
 
             printer.printNextPlayerMove(player1, playerPossibleMoves);
-            lastMove = new Point (player1.getMove());
-            result = gameRules.makeMove(*lastMove, PLAYER_1);
+            lastMove = new Point (player1.getMove(gameState));
+            result = gameRules.makeMove(gameState, *lastMove, PLAYER_1);
+            gameRules.makePossibleMoves(gameState, PLAYER_2);
 
         } else {
             // Player 2 turn.
-            printer.printLastMove(player1, lastMove);
             if (lastMove != NULL) {
                 delete(lastMove);
             }
 
-            printer.printNextPlayerMove(player2, playerPossibleMoves);
-            lastMove = new Point(player2.getMove());
-            result = gameRules.makeMove(*lastMove, PLAYER_2);
+            lastMove = new Point(player2.getMove(gameState));
+            if (!lastMove->isEqual(Point(-1, -1))) {
+                result = gameRules.makeMove(gameState, *lastMove, PLAYER_2);
+                gameRules.makePossibleMoves(gameState, PLAYER_1);
+            } else {
+                result = SUCCESS; // AIPlayer didn't player but the show must go on.
+            }
+
 
         }
 
@@ -185,8 +191,8 @@ void GameManager::inputUntilValid(possible_outcome result) {
         if (lastMove != NULL) {
             delete(lastMove);
         }
-        lastMove = new Point(currentPlayer->getMove());
-        result = gameRules.makeMove(*lastMove, currentP);
+        lastMove = new Point(currentPlayer->getMove(gameState));
+        result = gameRules.makeMove(gameState, *lastMove, currentP);
     }
 }
 

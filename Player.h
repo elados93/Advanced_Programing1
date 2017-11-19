@@ -4,15 +4,12 @@
 #ifndef EX02_PLAYER_H
 #define EX02_PLAYER_H
 
-#include "Point.h"
+#include "GameState.h"
 
 class Player {
 public:
-    char getSymbol() const;
-    virtual Point getMove() = 0;
-
-protected:
-    char symbol;
+    virtual char getSymbol() const = 0;
+    virtual Point getMove(GameState &gameState) = 0;
 };
 
 

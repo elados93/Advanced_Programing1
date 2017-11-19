@@ -8,6 +8,7 @@
 
 #include "Point.h"
 #include "Player.h"
+#include "GameState.h"
 
 
 class HumanPlayer : public Player{
@@ -18,7 +19,11 @@ public:
      * Get the move from the user according to the rules of the game.
      * @return The valid input point from user.
      */
-    virtual Point getMove();
+    Point getMove(GameState &gameState);
+    char getSymbol() const;
+
+private:
+    char symbol;
 };
 
 

@@ -9,10 +9,11 @@
 #include "Board.h"
 #include "Printer.h"
 #include "GameRules.h"
+#include "Player.h"
 
 class GameManager {
 public:
-    GameManager(Board &board, Player &player1, Player &player2, Printer &printer,
+    GameManager(GameState &gameState, Player &player1, Player &player2, Printer &printer,
                 GameRules &gameRules); // Constructor
 
     /**
@@ -21,7 +22,7 @@ public:
     void run();
 
 private:
-    Board &board; // Reference to the board.
+    GameState &gameState;
     Player &player1; // Reference to player 1.
     Player &player2; // Reference to player 2.
     Printer &printer; // Reference to the printer.

@@ -1,7 +1,6 @@
 // Created by Elad Aharon on 28/10/17.
 // ID: 311200786
 
-#include <iostream>
 #include "Board.h"
 
 Board::Board(int row = 8, int col = 8) {
@@ -9,8 +8,8 @@ Board::Board(int row = 8, int col = 8) {
     this->col = col;
 
     // Allocate pointers for the board.
-    this->matrix = new Cell*[row];
-    for(int i = 0;i<row;i++) {
+    this->matrix = new Cell *[row];
+    for (int i = 0; i < row; i++) {
         this->matrix[i] = new Cell[col];
     }
 
@@ -18,18 +17,18 @@ Board::Board(int row = 8, int col = 8) {
 }
 
 Board::Board(const Board &board) {
-    this->row = board.getRow();
-    this->col = board.getCol();
+    this->row = board.row;
+    this->col = board.col;
 
-    this->matrix = new Cell*[row];
-    for(int i = 0;i < row; i++) {
+    this->matrix = new Cell *[row];
+    for (int i = 0; i < row; i++) {
         this->matrix[i] = new Cell[col];
     }
 
     // Copy each cell from the parameter.
-    for(int i = 0;i < row;i++) {
-        for(int j = 0;j < col;j++) {
-            Point p(i,j);
+    for (int i = 0; i < row; i++) {
+        for (int j = 0; j < col; j++) {
+            Point p(i, j);
             this->matrix[i][j] = Cell(board.getCell(p));
         }
     }
@@ -38,17 +37,17 @@ Board::Board(const Board &board) {
 
 void Board::initBoard() {
     // Initialize all the board with no owners.
-    for(int i = 0;i < row;i++) {
-        for(int j = 0;j < col;j++) {
+    for (int i = 0; i < row; i++) {
+        for (int j = 0; j < col; j++) {
             this->matrix[i][j].setSymbol(NONE);
         }
     }
 
     // Set the center of the board with the 2 players.
-    this->matrix[(row/2)-1][(col/2)-1].setSymbol(PLAYER_2);
-    this->matrix[(row/2)-1][(col/2)].setSymbol(PLAYER_1);
-    this->matrix[(row/2)][(col/2)].setSymbol(PLAYER_2);
-    this->matrix[(row/2)][(col/2)-1].setSymbol(PLAYER_1);
+    this->matrix[(row / 2) - 1][(col / 2) - 1].setSymbol(PLAYER_2);
+    this->matrix[(row / 2) - 1][(col / 2)].setSymbol(PLAYER_1);
+    this->matrix[(row / 2)][(col / 2)].setSymbol(PLAYER_2);
+    this->matrix[(row / 2)][(col / 2) - 1].setSymbol(PLAYER_1);
 
 }
 
@@ -57,8 +56,8 @@ bool Board::isCellEmpty(Point &p) const {
 }
 
 bool Board::isBoardFull() const {
-    for(int i = 0;i < row;i++) {
-        for(int j = 0;j < col;j++) {
+    for (int i = 0; i < row; i++) {
+        for (int j = 0; j < col; j++) {
             if (!this->matrix[i][j].isCellActive()) {
                 return false;
             }
@@ -90,13 +89,61 @@ Cell Board::getCell(Point &p) const {
 
 Board::~Board() {
 
-    for(int i = 0;i < row; i++) {
-        delete(this->matrix[i]);
+    for (int i = 0; i < row; i++) {
+        delete (this->matrix[i]);
     }
 
     delete this->matrix;
 }
 
+Board &Board::operator=(const Board &board1) {
+    if (&board1 != this) {
 
+        for (int i = 0; i < row; i++) {
+            delete (this->matrix[i]);
+        }
+        delete this->matrix;
+
+        row = board1.row;
+        col = board1.col;
+
+        // Allocate pointers for the board.
+        this->matrix = new Cell *[row];
+        for (int i = 0; i < row; i++) {
+            this->matrix[i] = new Cell[col];
+        }
+
+        // Copy each cell from the parameter.
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                Point p(i, j);
+                this->matrix[i][j] = Cell(board1.getCell(p));
+            }
+        }
+    }
+    return *this;
+}
+
+/**
+ *
+ * @return  Point that represents the number of cells occupied with the x player and the o player
+ * in order to know the substruction between the two.
+ */
+Point Board::countOwner() {
+    int counterX = 0;
+    int counterO = 0;
+
+    for (int i = 0; i < row; i++) {
+        for (int j = 0; j < col; j++) {
+            if (matrix[i][j].getSymbol() == PLAYER_1) {
+                counterX++;
+            } else if (matrix[i][j].getSymbol() == PLAYER_2) {
+                counterO++;
+            }
+        }
+    }
+    return Point(counterX, counterO);
+
+}
 
 

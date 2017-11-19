@@ -4,8 +4,6 @@
 #ifndef EX02_CELL_H
 #define EX02_CELL_H
 
-
-#include "Player.h"
 #include "GenralDef.h"
 
 class Cell {

@@ -71,6 +71,7 @@ void ConsolePrinter :: printLine(int currentRow) const {
 }
 
 void ConsolePrinter::printNextPlayerMove(Player &p, vector<Point *> v)  {
+
     cout << p.getSymbol() << ": It's your move." << endl;
 
     // Check if there are any possible moves at all.
@@ -97,7 +98,7 @@ void ConsolePrinter::printNextPlayerMove(Player &p, vector<Point *> v)  {
 void ConsolePrinter::printLastMove(Player &player, Point *point)  {
 
     // If the point is null the last player didn't play.
-    if (point == NULL) {
+    if (point == NULL || point->isEqual(Point(-1, -1))) {
         cout << player.getSymbol() << " didn't played." << endl;
     } else {
         cout << player.getSymbol() << " played " << (*point).toString() << endl;
@@ -137,8 +138,3 @@ void ConsolePrinter::printError(possible_outcome outcome) {
             break;
     }
 }
-
-
-
-
-

@@ -12,7 +12,7 @@ HumanPlayer :: HumanPlayer(char s) {
     this->symbol = s;
 };
 
-Point HumanPlayer::getMove() {
+Point HumanPlayer::getMove(GameState &gameState) {
     int x,y;
 
     while (true) {
@@ -26,9 +26,13 @@ Point HumanPlayer::getMove() {
 
         // user didn't input a number
         cout << "Please enter numbers only." << endl;
-        cin.clear(); // reset failbit
+        cin.clear(); // reset fail bit
         cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); //skip bad input
     }
+}
+
+char HumanPlayer::getSymbol() const {
+    return symbol;
 }
 
 

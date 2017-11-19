@@ -7,15 +7,15 @@
 
 
 #include <vector>
-#include "Board.h"
+#include "Point.h"
 #include "GenralDef.h"
 
 using namespace std;
 
+class GameState;
+
 class GameRules {
 public:
-    GameRules(Board &board1); // Constructor.
-    virtual ~GameRules(); // Destructor.
 
     /**
      *  Make the vector of possible moves of "symbol" and also returns it.
@@ -23,7 +23,14 @@ public:
      * @param symbol The player.
      * @return The vector of possible points of symbol.
      */
-    virtual vector<Point*> makePossibleMoves(owner symbol);
+    virtual vector<Point *> makePossibleMoves(GameState &gameState, owner symbol) = 0;
+
+    /**
+ * Returns the possible moves of "symbol"
+ * @param symbol The player.
+ * @return Possible moves of symbol.
+ */
+    virtual vector<Point *> getPossibleMoves(GameState &gameState, owner symbol) = 0;
 
     /**
      * Make a single move of "symbol" at point p.
@@ -31,37 +38,7 @@ public:
      * @param symbol The player who plays.
      * @return Possible outcome of the procedure.
      */
-    possible_outcome makeMove(Point &p, owner symbol);
-
-    /**
-     * Returns true if the point is in the board.
-     * @param p Point to check.
-     * @return True if the point it's in the board.
-     */
-    bool isLegal(Point &p) const;
-
-    /**
-     * Returns the possible moves of "symbol"
-     * @param symbol The player.
-     * @return Possible moves of symbol.
-     */
-    vector<Point*> &getPossibleMoves(owner symbol);
-
-protected:
-    Board &board;
-    vector<Point*> vec1; // Vector with all the possible points of player 1.
-    vector<Point*> vec2; // Vector with all the possible points of player 2.
-
-    bool isAlreadyContains(Point &p, owner symbol);
-
-private:
-    /**
-     * Get the specific point "point" in vector "vec".
-     * @param point Point to extract from vec.
-     * @param vec Given vector of Point objects.
-     * @return The point in the vector.
-     */
-    Point* getPointFromVec(const Point &point, vector<Point*> vec) const;
+    virtual possible_outcome makeMove(GameState &gameState, Point &p, owner symbol) = 0;
 };
 
 

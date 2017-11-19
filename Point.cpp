@@ -5,6 +5,8 @@
 
 #include <sstream>
 #include "Point.h"
+using namespace std;
+
 Point::Point(int x, int y) : x(x), y(y) {}
 
 Point::Point(const Point &p) {
@@ -41,6 +43,10 @@ bool Point::isEqual(const Point &p) const {
 
 
 void Point::insertFlowPoint(Point *p) {
+    for (unsigned int i = 0; i < flowDirection.size(); ++i)
+        if (flowDirection.at(i)->isEqual(*p))
+            return;
+
     this->flowDirection.push_back(p);
 }
 
@@ -72,7 +78,8 @@ Point &Point::operator=(const Point &point) {
         x = point.x;
         y = point.y;
         for (unsigned int i = 0; i < point.flowDirection.size(); ++i) {
-            flowDirection.push_back(point.flowDirection.at(i)) ;
+            Point *newFlowDirection = new Point(*point.flowDirection.at(i));
+            flowDirection.push_back(newFlowDirection) ;
         }
     }
     return *this;

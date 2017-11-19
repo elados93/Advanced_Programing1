@@ -6,31 +6,78 @@
 #include <iostream>
 #include "ReversiDefaultRules.h"
 
-ReversiDefaultRules::ReversiDefaultRules(Board &board1) : GameRules(board1) {}
+ReversiDefaultRules::ReversiDefaultRules() {}
 
+possible_outcome ReversiDefaultRules::makeMove(GameState &gameState, Point &p, owner symbol) {
 
-vector<Point*> ReversiDefaultRules :: makePossibleMoves(owner symbol) {
+    // Not in the board.
+    if (!(*gameState.board).isInBoard(p)) {
+        return OUT_OF_BOUND;
+    }
+
+    // The cell is occupied.
+    if (!(*gameState.board).isCellEmpty(p)) {
+        return OCCUPIED_CELL;
+    }
+
+    // Not one of the possible options.
+    if (!isAlreadyContains(gameState, p, symbol)) {
+        return ILLEGAL_MOVE;
+    }
+
+    // Check all the possible directions of the point and mark the required cells.
+    vector<Point*> possibleMoves = (symbol == PLAYER_1 ? gameState.vec1 : gameState.vec2);
+    vector<Point*> flowVec = getPointFromVec(p, possibleMoves)->getDirVector();
+
+    for (unsigned int i = 0; i < flowVec.size(); i++) {
+        int dRow = flowVec.at(i)->getX();
+        int dCol = flowVec.at(i)->getY();
+
+        Point currentPoint(p);
+        Cell currentCell;
+
+        // Mark the cell in the right direction until you first meet the player symbol.
+        do {
+            (*gameState.board).markCell(currentPoint, symbol);
+            currentPoint.setX(currentPoint.getX() + dRow);
+            currentPoint.setY(currentPoint.getY() + dCol);
+            if ((*gameState.board).isInBoard(currentPoint)) {
+                currentCell = (*gameState.board).getCell(currentPoint);
+            } else {
+                break;
+            }
+        } while (currentCell.getSymbol() != symbol);
+    }
+
+    return SUCCESS;
+}
+
+vector<Point *> ReversiDefaultRules::getPossibleMoves(GameState &gameState, owner symbol) {
+    return symbol == PLAYER_1 ? gameState.vec1 : gameState.vec2;
+}
+
+vector<Point*> ReversiDefaultRules :: makePossibleMoves(GameState &gameState, owner symbol) {
 
     // Free all the previous allocations of the possible points.
-    freePointsInVec(symbol);
+    freePointsInVec(gameState, symbol);
 
-    int row = this->board.getRow();
-    int col = this->board.getCol();
+    int row = (*gameState.board).getRow();
+    int col = (*gameState.board).getCol();
 
     for(int i = 0;i < row;i++) {
         for(int j = 0;j < col;j++) {
             Point p(i, j);
-            owner currentSymbol = this->board.getCell(p).getSymbol();
+            owner currentSymbol = (*gameState.board).getCell(p).getSymbol();
             if (currentSymbol == symbol) { // Check only the relevant cells.
-                checkSurround(p, symbol);
+                checkSurround(gameState, p, symbol);
             }
         }
     }
 
-    return symbol == PLAYER_1 ? vec1 : vec2;
+    return symbol == PLAYER_1 ? gameState.vec1 : gameState.vec2;
 }
 
-void ReversiDefaultRules :: checkSurround(Point &p, owner symbol) {
+void ReversiDefaultRules :: checkSurround(GameState &gameState, Point &p, owner symbol) {
     int r = p.getX();
     int c = p.getY();
     int dRow = -1;
@@ -47,16 +94,16 @@ void ReversiDefaultRules :: checkSurround(Point &p, owner symbol) {
             }
 
             Point currentPoint(r + dRow, c + dCol);
-            if (!board.isInBoard(currentPoint)) {
+            if (!(*gameState.board).isInBoard(currentPoint)) {
                 continue;
             }
 
-            Cell currentCell = this->board.getCell(currentPoint);
+            Cell currentCell = (*gameState.board).getCell(currentPoint);
             owner otherSymbol = currentCell.getSymbol();
 
             // Check if the near cell belongs to the other player.
-            if (isLegal(currentPoint) && otherSymbol != symbol && currentCell.isCellActive()) {
-                moveAlong(currentPoint, otherSymbol, dRow, dCol);
+            if (isLegal(gameState, currentPoint) && otherSymbol != symbol && currentCell.isCellActive()) {
+                moveAlong(gameState, currentPoint, otherSymbol, dRow, dCol);
             }
 
             dCol++;
@@ -66,18 +113,18 @@ void ReversiDefaultRules :: checkSurround(Point &p, owner symbol) {
     }
 }
 
-void ReversiDefaultRules :: moveAlong(Point p ,owner symbol, short dRow, short dCol) {
-    Cell currentCell = this->board.getCell(p);
+void ReversiDefaultRules :: moveAlong(GameState &gameState, Point &p ,owner symbol, int dRow, int dCol) {
+    Cell currentCell = (*gameState.board).getCell(p);
     owner currentSymbol = (symbol == PLAYER_1 ? PLAYER_2 : PLAYER_1);
 
-    while(isLegal(p) && currentCell.getSymbol() == symbol) {
+    while(isLegal(gameState, p) && currentCell.getSymbol() == symbol) {
 
         // Advance the current point.
         p.setX(p.getX() + dRow);
         p.setY(p.getY() + dCol);
-        if (board.isInBoard(p)) {
+        if ((*gameState.board).isInBoard(p)) {
             // Advance the current cell.
-            currentCell = this->board.getCell(p);
+            currentCell = (*gameState.board).getCell(p);
         } else {
             break;
         }
@@ -87,36 +134,78 @@ void ReversiDefaultRules :: moveAlong(Point p ,owner symbol, short dRow, short d
     if (!currentCell.isCellActive()) {
 
         // Check if the potential point isn't already in the vector.
-        bool check = this->isAlreadyContains(p, currentSymbol);
+        bool check = this->isAlreadyContains(gameState, p, currentSymbol);
+        Point *flowPoint = new Point(dRow * -1, dCol * -1);
         if (!check) {
             Point *wantedPoint = new Point(p);
-            Point *flowPoint = new Point(dRow * -1, dCol * -1);
             wantedPoint->insertFlowPoint(flowPoint);
 
             if (symbol == PLAYER_1) {
-                this->vec2.push_back(wantedPoint);
+                gameState.vec2.push_back(wantedPoint);
             }
 
             if (symbol == PLAYER_2) {
-                this->vec1.push_back(wantedPoint);
+                gameState.vec1.push_back(wantedPoint);
             }
+        } else {
+            vector <Point *> currentPlayerVector = getPossibleMoves(gameState, currentSymbol);
+            Point *pointToAddFlow = getPointFromVec(p, currentPlayerVector);
+            pointToAddFlow->insertFlowPoint(flowPoint);
         }
     }
 }
 
-void ReversiDefaultRules :: freePointsInVec(owner symbol) {
+void ReversiDefaultRules :: freePointsInVec(GameState &gameState, owner symbol) {
     if (symbol == PLAYER_1) {
-        for (unsigned int i = 0; i < vec1.size(); i++) {
-            delete(vec1.at(i));
+        for (unsigned int i = 0; i < gameState.vec1.size(); i++) {
+            delete(gameState.vec1.at(i));
         }
-        vec1.clear();
+        gameState.vec1.clear();
     }
 
     if (symbol == PLAYER_2) {
-        for (unsigned int i = 0; i < vec2.size(); i++) {
-            delete(vec2.at(i));
+        for (unsigned int i = 0; i < gameState.vec2.size(); i++) {
+            delete(gameState.vec2.at(i));
         }
-        vec2.clear();
+        gameState.vec2.clear();
     }
 
+}
+
+bool ReversiDefaultRules:: isLegal(GameState &gameState, Point &p) const{
+    return (*gameState.board).isInBoard(p);
+}
+
+Point* ReversiDefaultRules :: getPointFromVec(Point &point, vector<Point*> vec) const {
+    for (unsigned int i = 0; i < vec.size(); ++i) {
+        if (vec.at(i)->isEqual(point)) {
+            return vec.at(i);
+        }
+    }
+    return NULL; // If the point isn't in the vector return null.
+}
+
+bool ReversiDefaultRules :: isAlreadyContains(GameState &gameState, Point &p, owner symbol) {
+
+    if (symbol == PLAYER_1) {
+        for (unsigned int i = 0; i < gameState.vec1.size(); i++) {
+
+            // Check if the point already exists.
+            if (p.isEqual(*(gameState.vec1.at(i)))) {
+                return true;
+            }
+        }
+    } else {
+        if (symbol == PLAYER_2) {
+            for (unsigned int i = 0; i < gameState.vec2.size(); i++) {
+
+                // Check if the point already exists.
+                if (p.isEqual(*(gameState.vec2.at(i)))) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }

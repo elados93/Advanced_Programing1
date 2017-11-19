@@ -7,7 +7,7 @@
 #define EX02_PRINTER_H
 
 #include "Board.h"
-
+#include "Player.h"
 
 
 class Printer {
@@ -19,6 +19,7 @@ public:
     virtual void printEndOfGame(Player &p, status status1) = 0;
     virtual void printError(possible_outcome outcome) = 0;
 };
+
 
 
 #endif //EX02_PRINTER_H
