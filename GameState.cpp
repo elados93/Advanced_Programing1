@@ -60,7 +60,7 @@ GameState &GameState::operator=(const GameState &copyGameState) {
             vec1.push_back(p);
         }
 
-        for (unsigned int i = 0; i < vec2.size(); i++) {
+        for (unsigned int i = 0; i < copyGameState.vec2.size(); i++) {
             Point *p = new Point(*copyGameState.vec2.at(i));
             vec2.push_back(p);
         }
