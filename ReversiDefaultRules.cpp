@@ -149,6 +149,7 @@ void ReversiDefaultRules :: moveAlong(GameState &gameState, Point &p ,owner symb
             }
         } else {
             vector <Point *> currentPlayerVector = getPossibleMoves(gameState, currentSymbol);
+            // Although the points is in the vector, it might have another direction to move along.
             Point *pointToAddFlow = getPointFromVec(p, currentPlayerVector);
             pointToAddFlow->insertFlowPoint(flowPoint);
         }

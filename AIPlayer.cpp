@@ -34,6 +34,7 @@ Point AIPlayer::getMove(GameState &gameState) {
 
     int scoreMin = *min_element(scores, scores + AIVector.size()); // Get the min score from all the scores.
     unsigned int pointToReturnIndex = 0;
+    //geting the point represented by the index of the play demo function.
     for (unsigned int j = 0; j < AIVector.size(); ++j)
         if (scores[j] == scoreMin) {
             pointToReturnIndex = j;
@@ -48,7 +49,8 @@ Point AIPlayer::getMove(GameState &gameState) {
 int AIPlayer::playDemo(GameState &demoGame) {
     GameState demoComputerGame(demoGame);
 
-    vector<Point*> humanVector = gameRules.makePossibleMoves(demoGame, PLAYER_1);
+    vector<Point*> humanVector = gameRules.makePossibleMoves(demoGame, PLAYER_1);// gets all the possible moves of the human player
+    //after one of the AI players options.
 
     int scores[humanVector.size()];
 

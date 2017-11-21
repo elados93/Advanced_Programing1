@@ -75,6 +75,13 @@ private:
      */
     Point* getPointFromVec(Point &point, vector<Point*> vec) const;
 
+    /**
+     * checks if a specific point is in the vector of the player with symbol that we get as a parameter.
+     * @param gameState
+     * @param p is the point to check.
+     * @param symbol is the symbol of the current player.
+     * @return true if the point is in the vector.
+     */
     bool isAlreadyContains(GameState &gameState, Point &p, owner symbol);
 };
 
