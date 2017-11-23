@@ -91,7 +91,7 @@ void ConsolePrinter::printNextPlayerMove(Player &p, vector<Point *> v)  {
             cout << v.at(i)->toString() << " ";
         }
 
-        cout << endl << "Please enter your move row, col: ";
+        cout << endl << "Please enter your move row, col: \n";
     }
 }
 

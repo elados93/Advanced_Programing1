@@ -10,13 +10,14 @@ using namespace std;
 
 
 GameManager::GameManager(GameState &gameState1, Player &player1, Player &player2, Printer &printer,
-                         GameRules &gameRules) : gameState(gameState1), player1(player1),
+                         GameRules &gameRules, bool aiPlayer) : gameState(gameState1), player1(player1),
                                                                             player2(player2), printer(printer),
                                                                             gameRules(gameRules),
-                                                                            currentPlayer() {
+                                                                            currentPlayer(), isAIPlayer(aiPlayer){
     this->currentPlayer = &this->player1;
     this->lastMove = NULL;
     this->firstRun = true;
+    this->isAIPlayer = aiPlayer;
 }
 
 owner GameManager::getWinner() const {
@@ -99,19 +100,24 @@ void GameManager :: run() {
 }
 
 void GameManager::playOneTurn() {
-    if (currentPlayer == &player1)
-        printer.printBoard();
-    possible_outcome result;
 
+    if (isAIPlayer && currentPlayer == &player1) // Print the board for player1 v.s the AIPlayer.
+        printer.printBoard();
+    if (!isAIPlayer) // Print the board normally when 2 humans play.
+        printer.printBoard();
+
+    possible_outcome result;
     vector <Point*> playerPossibleMoves;
+
     if (currentPlayer == &player1) {
         playerPossibleMoves = gameRules.getPossibleMoves(gameState, PLAYER_1);
     } else {
         playerPossibleMoves = gameRules.getPossibleMoves(gameState, PLAYER_2);
     }
 
-    // If there isn't moves just get a dummy character.
-    if (playerPossibleMoves.empty() && currentPlayer == &player1) {
+    // If the game v.s the computer and it's player1 turn OR 2 humans are playing aware they have no move.
+    if ((!isAIPlayer && playerPossibleMoves.empty()) ||
+            (isAIPlayer && playerPossibleMoves.empty() && currentPlayer == &player1)) {
         printer.printLastMove(*currentPlayer, lastMove);
         printer.printNextPlayerMove(*currentPlayer, playerPossibleMoves);
         char dummy; // Input any key from the user
@@ -124,6 +130,7 @@ void GameManager::playOneTurn() {
         lastMove = NULL;
         return;
     }
+
 
     if (firstRun) {
 
@@ -138,6 +145,7 @@ void GameManager::playOneTurn() {
         result = gameRules.makeMove(gameState, *lastMove, PLAYER_1);
         firstRun = false;
 
+        gameRules.makePossibleMoves(gameState, PLAYER_2);
     } else { // It's not the first turn in the game.
 
         if (currentPlayer == &player1) {
@@ -155,23 +163,39 @@ void GameManager::playOneTurn() {
 
         } else {
             // Player 2 turn.
-            if (lastMove != NULL) {
-                delete(lastMove);
-            }
+            if (isAIPlayer) {
+                if (lastMove != NULL) {
+                    delete(lastMove);
+                }
 
-            lastMove = new Point(player2.getMove(gameState));
-            if (!lastMove->isEqual(Point(-1, -1))) {
+                lastMove = new Point(player2.getMove(gameState));
+
+                if (!lastMove->isEqual(Point(-1, -1))) { // Check the option of AIPlayer which has no moves.
+                    result = gameRules.makeMove(gameState, *lastMove, PLAYER_2);
+                    gameRules.makePossibleMoves(gameState, PLAYER_1);
+                } else
+                    result = SUCCESS; // AIPlayer didn't player but the show must go on.
+            } else { // The option where player 2 is human.
+                printer.printLastMove(player1, lastMove);
+
+                if (lastMove != NULL) {
+                    delete(lastMove);
+                }
+
+                printer.printNextPlayerMove(player2, playerPossibleMoves);
+
+                lastMove = new Point(player2.getMove(gameState));
+
                 result = gameRules.makeMove(gameState, *lastMove, PLAYER_2);
+
                 gameRules.makePossibleMoves(gameState, PLAYER_1);
-            } else {
-                result = SUCCESS; // AIPlayer didn't player but the show must go on.
             }
 
-
-        }
+        } // End Player2 flow.
 
     }
 
+    // If the result isn't well defined check again.
     if (result != SUCCESS) {
         inputUntilValid(result);
     }

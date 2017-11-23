@@ -14,7 +14,7 @@
 class GameManager {
 public:
     GameManager(GameState &gameState, Player &player1, Player &player2, Printer &printer,
-                GameRules &gameRules); // Constructor
+                GameRules &gameRules, bool aiPlayer); // Constructor
 
     /**
      * Run the game until there is a winner or draw situation.
@@ -30,6 +30,7 @@ private:
     Player *currentPlayer; // Pointer to the current player.
     bool firstRun; // Boolean switch if it's the first turn.
     Point *lastMove; // Pointer to the last player move, NULL if there isn't one.
+    bool isAIPlayer; // True if the second player is AIPlayer.
 
     /**
      * Return the current status of the game. The game will end if the board

@@ -54,7 +54,7 @@ GameState &GameState::operator=(const GameState &copyGameState) {
         }
         vec2.clear();
 
-        // initialzing the new game state.
+        // Initialzing the new game state.
         board = new Board(*copyGameState.board);
 
         for (unsigned int i = 0; i < copyGameState.vec1.size(); i++) {
